@@ -53,3 +53,65 @@ class SnippetListTest(APITestCase):
             # values_list의 리턴 타입은 ValuesListQuerySet이기 때문에 lazy - 쿼리가 바로 실행되지 않음
             list(Snippet.objects.order_by('-created').values_list('pk', flat=True))
         )
+
+
+class SnippetCreateTest(APITestCase):
+    def test_snippet_create_status_code(self):
+        """
+        201이 들어오는지
+        :return:
+        """
+        response = self.client.post(
+            '/snippets/django-view/snippets/',
+            data={
+                'code': "print('hello, world!')"
+            },
+            format='json',
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_snippet_create_save_db(self):
+        """
+        요청 후 실제 DB에 저장되었는지(모든 필드값이 정상적으로 저장되었는지)
+        :return:
+        """
+        snippet_data = {
+            'title': 'SnippetTitle',
+            'code': 'SnippetCode',
+            'linenos': True,
+            'language': 'c',
+            'style': 'monokai',
+        }
+
+        response = self.client.post(
+            '/snippets/django-view/snippets/',
+            data=snippet_data,
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        data = json.loads(response.content)
+
+        for key, value in snippet_data.items():
+            self.assertEqual(data[key], value)
+
+    def test_snippet_create_missing_code_raise_exception(self):
+        """
+        'code'데이터가 주어지지 않을 경우 적절한 Exception이 발생하는지
+        :return:
+        """
+        # code만 주어지지 않은 데이터
+        snippet_data = {
+            'title': 'SnippetTitle',
+            'linenos': True,
+            'language': 'c',
+            'style': 'monokai',
+        }
+        response = self.client.post(
+            '/snippets/django-view/snippets/',
+            data=snippet_data,
+            format='json',
+        )
+
+        # code가 주어지지 않으면 HTTP상태코드가 400이어야 함
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
