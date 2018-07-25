@@ -1,10 +1,19 @@
 import json
 import random
+import string
 
+from django.contrib.auth import get_user_model
 from rest_framework import status
-from rest_framework.test import APITestCase
+from rest_framework.test import APITestCase, APIClient
 
 from .models import Snippet
+
+User = get_user_model()
+
+
+def get_dummy_user():
+    dummy_username = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
+    return User.objects.create_user(username=dummy_username)
 
 
 class SnippetListTest(APITestCase):
@@ -17,7 +26,8 @@ class SnippetListTest(APITestCase):
     def create_sample_snippets(number):
         for i in range(number):
             Snippet.objects.create(
-                code="test code"
+                code="test code",
+                owner=get_dummy_user(),
             )
 
     def test_snippet_list_status_code(self):
@@ -65,6 +75,8 @@ class SnippetCreateTest(APITestCase):
         201이 들어오는지
         :return:
         """
+        user = get_dummy_user()
+        self.client.force_authenticate(user=user)
         response = self.client.post(
             self.URL,
             data={
@@ -86,7 +98,8 @@ class SnippetCreateTest(APITestCase):
             'language': 'c',
             'style': 'monokai',
         }
-
+        user = get_dummy_user()
+        self.client.force_authenticate(user=user)
         response = self.client.post(
             self.URL,
             data=snippet_data,
@@ -111,6 +124,8 @@ class SnippetCreateTest(APITestCase):
             'language': 'c',
             'style': 'monokai',
         }
+        user = get_dummy_user()
+        self.client.force_authenticate(user=user)
         response = self.client.post(
             self.URL,
             data=snippet_data,
