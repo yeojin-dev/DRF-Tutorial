@@ -20,6 +20,7 @@ class Snippet(models.Model):
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
+        related_name='snippets',
     )
     highlighted = models.TextField()
 
