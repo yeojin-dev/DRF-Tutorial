@@ -25,7 +25,7 @@ class Snippet(models.Model):
     highlighted = models.TextField()
 
     class Meta:
-        ordering = ('created',)
+        ordering = ('-created',)
 
     def save(self, *args, **kwargs):
         lexer = get_lexer_by_name(self.language)
