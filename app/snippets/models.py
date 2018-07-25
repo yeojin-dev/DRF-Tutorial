@@ -38,3 +38,5 @@ class Snippet(models.Model):
             **options,
         )
         self.highlighted = highlight(self.code, lexer, formatter)
+
+        super().save()
