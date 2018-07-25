@@ -3,7 +3,7 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
 
-from ..serializers import SnippetSerializer
+from ..serializers import SnippetListSerializer
 from ..models import Snippet
 
 
@@ -19,11 +19,11 @@ class JSONResponse(HttpResponse):
 def snippet_list(request):
     if request.method == 'GET':
         snippets = Snippet.objects.order_by('-created')
-        serializer = SnippetSerializer(snippets, many=True)
+        serializer = SnippetListSerializer(snippets, many=True)
         return JSONResponse(serializer.data)
     elif request.method == 'POST':
         data = JSONParser().parse(request)
-        serializer = SnippetSerializer(data=data)
+        serializer = SnippetListSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
             return JSONResponse(serializer.data, status=201)
@@ -41,12 +41,12 @@ def snippet_detail(request, pk):
         return HttpResponse(status=404)
 
     if request.method == 'GET':
-        serializer = SnippetSerializer(snippet)
+        serializer = SnippetListSerializer(snippet)
         return JSONResponse(serializer.data)
 
     elif request.method == 'PUT':
         data = JSONParser().parse(request)
-        serializer = SnippetSerializer(snippet, data=data)
+        serializer = SnippetListSerializer(snippet, data=data)
 
         # code 필드는 반드시 필요하기 때문에 code 값이 비어있으면 is_valid() 통과 불가능
         if serializer.is_valid():
@@ -58,7 +58,7 @@ def snippet_detail(request, pk):
         data = JSONParser().parse(request)
 
         # PATCH 메소드와 partial=True 인자 설정으로 부분 변경 가능함
-        serializer = SnippetSerializer(snippet, data=data, partial=True)
+        serializer = SnippetListSerializer(snippet, data=data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return JSONResponse(serializer.data)
