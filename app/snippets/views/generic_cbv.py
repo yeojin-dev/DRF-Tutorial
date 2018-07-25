@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import generics, permissions
 
+from utils.paginations import SnippetListPagination
 from ..models import Snippet
 from ..serializers import (
     UserListSerializer,
@@ -21,6 +22,7 @@ __all__ = (
 class SnippetList(generics.ListCreateAPIView):
     queryset = Snippet.objects.all()
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    pagination_class = SnippetListPagination
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
