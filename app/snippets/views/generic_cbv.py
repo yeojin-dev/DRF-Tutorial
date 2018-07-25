@@ -20,9 +20,13 @@ __all__ = (
 
 class SnippetList(generics.ListCreateAPIView):
     queryset = Snippet.objects.all()
-    serializer_class = SnippetListSerializer
-
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return SnippetListSerializer
+        elif self.request.method == 'POST':
+            return SnippetDetailSerializer
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)

@@ -6,6 +6,7 @@ from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 
+from snippets.serializers import UserListSerializer
 from .models import Snippet
 
 User = get_user_model()
@@ -109,8 +110,20 @@ class SnippetCreateTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         data = json.loads(response.content)
 
-        for key, value in snippet_data.items():
-            self.assertEqual(data[key], value)
+        check_fields = [
+            'title',
+            'linenos',
+            'language',
+            'style',
+        ]
+
+        for field in check_fields:
+            self.assertEqual(data[field], snippet_data[field])
+
+        self.assertEqual(
+            data['owner'],
+            UserListSerializer(user).data
+        )
 
     def test_snippet_create_missing_code_raise_exception(self):
         """
