@@ -4,7 +4,7 @@ import string
 
 from django.contrib.auth import get_user_model
 from rest_framework import status
-from rest_framework.test import APITestCase, APIClient
+from rest_framework.test import APITestCase
 
 from snippets.serializers import UserListSerializer
 from .models import Snippet
@@ -47,7 +47,7 @@ class SnippetListTest(APITestCase):
         self.create_sample_snippets(random.randint(5, 10))
         response = self.client.get(self.URL)
         json_data = json.loads(str(response.content, encoding='utf-8'))
-        self.assertEqual(len(json_data), Snippet.objects.count())
+        self.assertEqual(json_data['count'], Snippet.objects.count())
 
     def test_snippet_list_order_by_created_desc(self):
         """
@@ -56,12 +56,21 @@ class SnippetListTest(APITestCase):
         :return:
         """
         self.create_sample_snippets(random.randint(5, 10))
-        response = self.client.get(self.URL)
-        json_data = json.loads(str(response.content, encoding='utf-8'))
+
+        pk_list = list()
+        page = 1
+
+        while True:
+            response = self.client.get(self.URL, {'page': page})
+            data = json.loads(response.content)
+            pk_list += [item['pk'] for item in data['results']]
+            if data['next']:
+                page += 1
+            else:
+                break
 
         self.assertEqual(
-            # JSON으로 전달받은 데이터에서 pk만 꺼낸 리스트
-            [item['pk'] for item in json_data],
+            pk_list,
             # DB에서 created 역순으로 pk만 가져오는 QuerySet으로 만든 리스트
             # values_list의 리턴 타입은 ValuesListQuerySet이기 때문에 lazy - 쿼리가 바로 실행되지 않음
             list(Snippet.objects.order_by('-created').values_list('pk', flat=True))
