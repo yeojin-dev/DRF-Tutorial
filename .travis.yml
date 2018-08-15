@@ -4,4 +4,4 @@ python:
   - 3.6
 
 script:
-  - python manage.py test
+  - python app/manage.py test
